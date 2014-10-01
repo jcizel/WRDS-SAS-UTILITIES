@@ -1,0 +1,32 @@
+# exclude file extensions
+*.webprj
+*.session
+*.bak
+*~
+*.tmp
+*.lst
+*.log
+*.aux
+*.bbl
+*.backup
+*.blg
+*.brf
+*.out
+_*.sas
+*.eml
+*0.sas
+.titles
+# special files
+tags
+Distfile
+.dir.*
+# exclude directories
+mtest/
+Private/
+RCS/
+RESTORE/
+in/
+old/
+eda/
+einar/
+
