@@ -1,0 +1,84 @@
+LIBNAME AMA_V "/wrds/bvd/sasdata/ama_v";
+%LET INDSN=AMA_V.COMPANY_V;
+
+
+%MACRO CHK_MISSING(INDSN, OUTDSN);
+    %IF %LENGTH (&INDSN) = 0
+        %THEN %DO;
+        %GOTO ENDIT1;
+        %END;
+    %IF %LENGTH (&INDSN) = 0
+        %THEN %DO;
+        %GOTO ENDIT1;
+        %END;
+
+    PROC CONTENTS DATA=&INDSN OUT=__AC1__ NOPRINT;
+    RUN;
+
+    PROC SQL NOPRINT;
+        SELECT NAME INTO :_V_LIST_ SEPARATED BY '~' FROM __AC1__;
+        SELECT COUNT(*) INTO :_NUMOBS_ FROM __AC1__;
+    QUIT;
+
+    %PUT _V_LIST_ = &_V_LIST_;
+    %PUT _NUMOBS_ = &_NUMOBS_;
+
+    PROC SQL;
+        CREATE TABLE __AC2__ AS
+            SELECT
+            %LET __I__=1;
+        %DO %UNTIL(&__I__ > &_NUMOBS_);
+            %IF &__I__ = &_NUMOBS_ %THEN %DO;
+                NMISS(&SCAN(&_V_LIST_,&__I__,%STR(~))) AS %SCAN(&_V_LIST_,&__I__,%STR(~))
+                    %END;
+                %ELSE %DO;
+                    NMISS(&SCAN(&_V_LIST_,&__I__,%STR(~))) AS %SCAN(&_V_LIST_,&__I__,%STR(~))
+                        %END;
+                    FROM &INDSN;
+        QUIT;
+
+        PROC TRANSPOSE
+            DATA=__AC2__
+            OUT=__AC3__ (RENAME(COL1=MISS_COUNT))
+            NAME=VARS;
+        RUN;
+
+        PROC SQL;
+            CREATE TABLE __AC4__ AS
+                SELECT
+                A.VARNUM AS VARNUM LABEL = "#",
+                A.NAME AS NAME LABEL = "VARIABLE",
+                A.TYPE AS TYPE,
+                A.LENGTH AS LENGTH LABEL = "LEN",
+                A.FORMAT AS FORMAT LABEL="FORMAT",
+                A.LABEL AS LABEL="LABEL",
+                A.NOBS,
+                B.MISS_COUNT AS MISS_COUNT
+                FROM
+                __AC1__ AS A
+                LEFT JOIN
+                __AC3__ AS B
+                ON A.NAME EQ B.VARS
+                ORDER BY VARNUM;
+        QUIT;
+        
+    DATA __AC5__;
+        SET __AC4__;
+        MISS_PCT = MISS_COUNT/NOBS;
+        FORMAT MISS_COUNT COMMA20.
+            MISS_PCT PERCENT8.3;
+        RUN;
+
+    DATA &OUTDSN;
+        FORMAT VARNUM NAME TYPE_;
+        SET __AC5__;
+        LENGTH TYPE_ $4;
+        IF TYPE EQ 1 THEN TYPE_="NUM";
+        ELSE IF TYPE EQ 2 THEN TYPE_="CHAR";
+        IF FORMAT1 NE 0 AND FORMATD NE 0 THEN DO;
+            FORMAT = STRIP(FORMAT)||STRIP(PUT(FORMAT1,3.))||"."||STRIP(PUT(FORMATD,3.));
+            END;
+        ELSE IF FORMAT1 NE 0 THEN FORMAT=
+    
+
+            

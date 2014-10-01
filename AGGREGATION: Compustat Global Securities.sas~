@@ -1,0 +1,27 @@
+OPTIONS SASAUTOS=('/wrds/wrdsmacros/', SASAUTOS) MAUTOSOURCE SOURCE NOCENTER LS=80 PS=MAX;
+%INCLUDE "~/UTILITIES/UTILITIES.GENERAL.sas";
+
+LIBNAME HOME "/scratch/uvanl";
+
+LIBNAME CRSP "/wrds/crsp/sasdata/a_stock";
+LIBNAME COMPG "/wrds/comp/sasdata/global";
+
+PROC SQL;
+    CREATE TABLE GSECDSLO AS
+        SELECT *
+        FROM COMPG.G_SECD
+        WHERE FIC = "SVN";
+RUN;
+QUIT;
+
+PROC EXPAND
+    DATA = COMPG.G_SECD
+    OUT = G_SECD_QTR
+    FROM = DAY
+    TO = QTR;
+
+    BY _CHARACTER_;
+    ID DATADATE;
+    
+    CONVERT _NUMERIC_ = _NUMERIC_ / OBSERVED = END;
+RUN;

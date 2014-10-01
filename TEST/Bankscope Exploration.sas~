@@ -1,0 +1,7 @@
+OPTIONS SASAUTOS=('/wrds/wrdsmacros/', SASAUTOS) MAUTOSOURCE SOURCE NOCENTER LS=80 PS=MAX;
+%INCLUDE "~/UTILITIES/UTILITIES.GENERAL.sas";
+
+
+LIBNAME HOME "/scratch/uvanl";
+
+LIBNAME AMA_L "/wrds/bvd/sasdata/bs";
